@@ -1,0 +1,1 @@
+[{"model": "reports.visibility", "pk": 1, "fields": {"name": "Закрытая"}}, {"model": "reports.visibility", "pk": 2, "fields": {"name": "Только для подписчиков"}}, {"model": "reports.visibility", "pk": 3, "fields": {"name": "Видимая для всех"}}]
