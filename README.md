@@ -21,6 +21,9 @@ Backend for running diary application. Include:
 # USING
 sudo sh ./run.sh
 
+# DATABASE SCHEMA
+![my_diary](https://user-images.githubusercontent.com/72695509/208481292-c14b6174-5e83-45b7-a726-23b33b029575.jpg)
+
 # REQUESTS EXAMPLES
 
 1. Registration. URL http://127.0.0.1:8000/api/v1/registration/
