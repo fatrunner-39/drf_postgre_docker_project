@@ -1,4 +1,4 @@
-# drf_postgre_docker_project
+# drf_postgres_docker_project
 
 # DESCRIPTION
 Backend for running diary application. Include:
