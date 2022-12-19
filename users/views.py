@@ -128,6 +128,19 @@ class CoachToRunnerViewSet(viewsets.ModelViewSet):
         return Response(data={"success": f"Users with ids = {data['runner_ids']} added to "
                                          f"coach with id = {request.user.id}"})
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        print(serializer.data)
+        queryset = [obj['runner_id'] for obj in serializer.data]
+        return Response(queryset)
+
     @action(methods=["DELETE"], detail=False)
     def delete(self, request):
         data = request.data

@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from .models import FileLoader
 from .serializers import FileLoaderSerializer
 from reports.models import Report, Visibility
+from reports.serializers import ReportSerializer
 from users.permissions import IsAdminOrReadOnly, IsCoach, check_role
 
 
@@ -40,7 +41,7 @@ class FileLoaderViewSet(viewsets.ModelViewSet):
         closed = Visibility.objects.get(name='Закрытая')
         file_id = FileLoader.objects.get(id=serializer.data['id'])
         # create report
-        Report.objects.create(
+        new_report = Report.objects.create(
             title='Running',
             file_id=file_id,
             runner_id=request.user,
@@ -50,6 +51,8 @@ class FileLoaderViewSet(viewsets.ModelViewSet):
             avg_pace=avg_pace,
             started_at=gpx.get_time_bounds().start_time
         )
+        serialized = serializer.data
+        serialized['report'] = ReportSerializer(new_report).data
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serialized, status=status.HTTP_201_CREATED, headers=headers)
 
