@@ -4,9 +4,9 @@ services:
     build: .
     ports:
       - "8000:8000"
-    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/training_diary
+    entrypoint: sh ./run.sh
     depends_on:
       - db
 
