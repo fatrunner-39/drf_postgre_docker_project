@@ -1,7 +1,7 @@
 from django.db.models.functions import Concat
 from django.db.models import Value as V
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status, mixins
+from rest_framework import viewsets, status, filters, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -9,12 +9,24 @@ from rest_framework.response import Response
 from .models import User, Role, CoachToRunner, Subscribe
 from .serializers import UserSerializer, RoleSerializer, CoachToRunnerSerializer, SubscribeSerializer
 from .permissions import IsAdminOrReadOnly, IsCoach, check_role
+from .helpers import clean_data
 
 
 class CreateUserView(mixins.CreateModelMixin,
                      viewsets.GenericViewSet):
     queryset = User.objects
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        runner_id = Role.objects.get(name='runner').id
+        if not request.data.get('role_id'):
+            request.data['role_id'] = runner_id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        data = clean_data(serializer.data)
+        headers = self.get_success_headers(data)
+        return Response(data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
@@ -57,7 +69,14 @@ class UserViewSet(mixins.RetrieveModelMixin,
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
+        [obj.pop('password') for obj in serializer.data]
         return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = clean_data(serializer.data)
+        return Response(data)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -73,7 +92,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
-        return Response(serializer.data)
+        return Response(clean_data(serializer.data))
 
 
 class RoleViewSet(viewsets.ModelViewSet):

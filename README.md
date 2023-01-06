@@ -14,9 +14,6 @@ Backend for running diary application. Include:
 3. source env/bin/activate
 4. sudo docker-compose up --build
 5. sudo docker-compose exec web python manage.py createsuperuser
-6. sudo docker-compose exec web python manage.py loaddata users/fixtures/roles.json
-7. sudo docker-compose exec web python manage.py loaddata tasks/fixtures/task_types.json
-8. sudo docker-compose exec web python manage.py loaddata reports/fixtures/visibility.json
 
 # DATABASE SCHEMA
 ![my_diary](https://user-images.githubusercontent.com/72695509/208481292-c14b6174-5e83-45b7-a726-23b33b029575.jpg)

@@ -4,13 +4,13 @@ from rest_framework import permissions
 class IsAdminOrReadOnly(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.user.is_staff
+        return request.user.role_id.name == 'superadmin'
 
 
 class IsCoach(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return request.user.role_id.name in ('coach') or request.user.is_staff
+        return request.user.role_id.name in ('coach', 'superadmin')
 
 
 class IsOwnerOrAdminOrReadOnly(permissions.BasePermission):
@@ -22,7 +22,7 @@ class IsOwnerOrAdminOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        if obj.owner == request.user or request.user.is_staff:
+        if obj.owner == request.user or request.user.role_id.name == 'superadmin':
             return True
 
 
@@ -31,18 +31,19 @@ class CheckRole:
         return request.user.role_id.name == 'coach'
 
     def is_admin(self, request):
-        return request.user.is_staff
+        return request.user.role_id.name == 'superadmin'
 
     def is_coach_or_admin(self, request):
-        return request.user.role_id.name in ('coach') or request.user.is_staff
+        return request.user.role_id.name in ('coach', 'superadmin')
 
     def is_owner_or_admin(self, request, obj):
-        if obj.id == request.user.id or request.user.is_staff:
+        if obj.id == request.user.id or request.user.role_id.name == 'superadmin':
             return True
 
     def is_report_owner_or_admin(self, request, obj):
-        if obj.runner_id == request.user.id or request.user.is_staff:
+        if obj.runner_id == request.user.id or request.user.role_id.name == 'superadmin':
             return True
+
 
 
 check_role = CheckRole()
