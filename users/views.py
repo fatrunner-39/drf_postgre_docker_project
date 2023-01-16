@@ -5,16 +5,32 @@ from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from loguru import logger
 
 from .models import User, Role, CoachToRunner, Subscribe
 from .serializers import UserSerializer, RoleSerializer, CoachToRunnerSerializer, SubscribeSerializer
 from .permissions import IsAdminOrReadOnly, IsCoach, check_role
+from send_mail import user_greeting
+from .celery_tasks import send_email_task
 
 
 class CreateUserView(mixins.CreateModelMixin,
                      viewsets.GenericViewSet):
     queryset = User.objects
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        new_user = super().create(request, *args, **kwargs)
+        user = new_user.data
+        full_name = f'{user["first_name"]}{user["last_name"]}'
+        message = user_greeting(full_name)
+        send_email_task(
+            title='Greeting',
+            message=message,
+            to_emails=user["username"]
+        )
+        logger.info(f'User with username = {user["username"]} was registered success!')
+        return new_user
 
 
 class UserViewSet(mixins.RetrieveModelMixin,
@@ -31,6 +47,7 @@ class UserViewSet(mixins.RetrieveModelMixin,
             return Response(data={"error": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
         user_id = instance.id
         super(UserViewSet, self).destroy(request, *args, **kwargs)
+        logger.info(f'User with id = {user_id} was deleted')
         return Response(data={"success": f"User with id = {user_id} was deleted"})
 
     def list(self, request, *args, **kwargs):
